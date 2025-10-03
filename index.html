@@ -108,6 +108,7 @@
         border-radius: 8px;
         border: 1px solid #d1d5db;
         background: white;
+        transition: right 0.28s ease, transform 0.12s ease;
       }
 
       #toggleMenuBtn {
@@ -116,6 +117,14 @@
 
       #toggleConsoleBtn {
         right: 10px;
+      }
+
+      /* Quando qualquer sidebar estiver aberta, movemos OS DOIS botões para ficar ao lado do sidebar */
+      body.sidebar-open #toggleMenuBtn {
+        right: calc(var(--sidebar-width) + 60px);
+      }
+      body.sidebar-open #toggleConsoleBtn {
+        right: calc(var(--sidebar-width) + 10px);
       }
 
       /* Sidebars padrões */
@@ -244,7 +253,7 @@
     </style>
   </head>
   <body>
-    <!-- Controls principais -->
+    <!-- Controls principais (sem 'Aplicar' nem 'Resetar') -->
     <div class="controls" aria-label="Controles do iframe">
       <label>
         Largura:
@@ -307,11 +316,6 @@
           />
         </div>
       </label>
-
-      <div style="display: flex; gap: 8px">
-        <button id="resetBtn">Resetar para celular</button>
-        <button id="applySizeBtn" title="Aplicar tamanho atual">Aplicar</button>
-      </div>
     </div>
 
     <!-- Iframe / wrapper -->
@@ -320,8 +324,12 @@
     </div>
 
     <!-- Toggle buttons (menu / console) -->
-    <button id="toggleMenuBtn" aria-expanded="false">☰</button>
-    <button id="toggleConsoleBtn" aria-expanded="false">🖥</button>
+    <button id="toggleMenuBtn" aria-expanded="false" title="Predefinições">
+      ☰
+    </button>
+    <button id="toggleConsoleBtn" aria-expanded="false" title="Console">
+      🖥
+    </button>
 
     <!-- Predefinições (menu) -->
     <aside id="menuBar" class="sideBar" aria-hidden="true">
@@ -385,46 +393,6 @@
         >
           Motorola Moto G24
         </button>
-        <button
-          class="preset"
-          data-width="1179"
-          data-height="2556"
-          data-scale="0.35"
-        >
-          iPhone 15
-        </button>
-        <button
-          class="preset"
-          data-width="1170"
-          data-height="2532"
-          data-scale="0.36"
-        >
-          iPhone 13
-        </button>
-        <button
-          class="preset"
-          data-width="828"
-          data-height="1792"
-          data-scale="0.5"
-        >
-          iPhone 11
-        </button>
-        <button
-          class="preset"
-          data-width="750"
-          data-height="1334"
-          data-scale="0.65"
-        >
-          iPhone SE (3ª Geração)
-        </button>
-        <button
-          class="preset"
-          data-width="1440"
-          data-height="3088"
-          data-scale="0.25"
-        >
-          Samsung Galaxy S22 Ultra
-        </button>
       </div>
     </aside>
 
@@ -456,9 +424,6 @@
       const heightInput = document.getElementById("heightInput");
       const scaleSlider = document.getElementById("scaleSlider");
       const scaleInput = document.getElementById("scaleInput");
-
-      const resetBtn = document.getElementById("resetBtn");
-      const applySizeBtn = document.getElementById("applySizeBtn");
 
       const toggleMenuBtn = document.getElementById("toggleMenuBtn");
       const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");
@@ -520,22 +485,6 @@
       syncInputs(heightSlider, heightInput, updateIframeSize);
       syncInputs(scaleSlider, scaleInput, updateIframeScale);
 
-      // botão aplicar (aplica os valores atuais)
-      applySizeBtn.addEventListener("click", () => {
-        updateIframeSize();
-        updateIframeScale();
-      });
-
-      // reset padrão para celular
-      resetBtn.addEventListener("click", () => {
-        widthSlider.value = widthInput.value = 375;
-        heightSlider.value = heightInput.value = 667;
-        scaleSlider.value = scaleInput.value = 1;
-        updateIframeSize();
-        updateIframeScale();
-        clearActivePresets();
-      });
-
       // inicializa
       updateIframeSize();
       updateIframeScale();
@@ -561,7 +510,6 @@
         heightSlider.value = heightInput.value = height;
         scaleSlider.value = scaleInput.value = scale;
 
-        // animações suaves já são aplicadas por CSS no wrapper/iframe
         updateIframeSize();
         updateIframeScale();
 
@@ -574,42 +522,86 @@
       });
 
       /**********************
-       * Toggle sidebars
+       * Toggle sidebars (mutually exclusive) + mover os DOIS botões
        **********************/
       function setAriaOpen(button, isOpen) {
         button.setAttribute("aria-expanded", String(isOpen));
       }
 
-      toggleMenuBtn.addEventListener("click", () => {
-        const opened = menuBar.classList.toggle("open");
-        menuBar.setAttribute("aria-hidden", String(!opened));
-        setAriaOpen(toggleMenuBtn, opened);
-      });
-      closeMenuBtn.addEventListener("click", () => {
+      function closeAllSidebars() {
         menuBar.classList.remove("open");
         menuBar.setAttribute("aria-hidden", "true");
         setAriaOpen(toggleMenuBtn, false);
-      });
 
-      toggleConsoleBtn.addEventListener("click", () => {
-        const opened = consoleBar.classList.toggle("open");
-        consoleBar.setAttribute("aria-hidden", String(!opened));
-        setAriaOpen(toggleConsoleBtn, opened);
-      });
-      closeConsoleBtn.addEventListener("click", () => {
         consoleBar.classList.remove("open");
         consoleBar.setAttribute("aria-hidden", "true");
         setAriaOpen(toggleConsoleBtn, false);
+
+        // remove a classe que desloca os botões
+        document.body.classList.remove("sidebar-open");
+      }
+
+      function openSidebar(which) {
+        // abre requested e fecha o outro, e desloca os botões via classe no <body>
+        if (which === "menu") {
+          consoleBar.classList.remove("open");
+          consoleBar.setAttribute("aria-hidden", "true");
+          setAriaOpen(toggleConsoleBtn, false);
+
+          menuBar.classList.add("open");
+          menuBar.setAttribute("aria-hidden", "false");
+          setAriaOpen(toggleMenuBtn, true);
+        } else if (which === "console") {
+          menuBar.classList.remove("open");
+          menuBar.setAttribute("aria-hidden", "true");
+          setAriaOpen(toggleMenuBtn, false);
+
+          consoleBar.classList.add("open");
+          consoleBar.setAttribute("aria-hidden", "false");
+          setAriaOpen(toggleConsoleBtn, true);
+        }
+        // desloca ambos os botões para ficar ao lado do sidebar
+        document.body.classList.add("sidebar-open");
+      }
+
+      toggleMenuBtn.addEventListener("click", () => {
+        const wasOpen = menuBar.classList.contains("open");
+        if (wasOpen) {
+          closeAllSidebars();
+        } else {
+          openSidebar("menu");
+        }
+      });
+
+      toggleConsoleBtn.addEventListener("click", () => {
+        const wasOpen = consoleBar.classList.contains("open");
+        if (wasOpen) {
+          closeAllSidebars();
+        } else {
+          openSidebar("console");
+        }
+      });
+
+      closeMenuBtn.addEventListener("click", closeAllSidebars);
+      closeConsoleBtn.addEventListener("click", closeAllSidebars);
+
+      // fechar com ESC
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeAllSidebars();
+        }
+      });
+
+      // fechar sidebars ao clicar no próprio pano de fundo
+      menuBar.addEventListener("click", (ev) => {
+        if (ev.target === menuBar) closeAllSidebars();
+      });
+      consoleBar.addEventListener("click", (ev) => {
+        if (ev.target === consoleBar) closeAllSidebars();
       });
 
       /**********************
-       * Rotacionar com animação + swap de valores
-       *
-       * Comportamento:
-       * - Quando usuário clica:
-       *   • wrapper anima rotate(-90deg) (se estava em pé) ou rotate(90deg) (se estava deitado)
-       *   • após tempo de animação (500ms), trocamos width<->height
-       *   • então resetamos a rotação instantaneamente para 0 (sem transição)
+       * Rotacionar com animação + swap de valores (corrigido)
        **********************/
       rotateBtn.addEventListener("click", () => {
         const ANIM_MS = 500;
@@ -646,15 +638,15 @@
       });
 
       /**********************
-       * Console capture (monkey patch)
+       * Console capture (parent) + tentativa de hook no iframe (same-origin)
        **********************/
-      // guarda métodos originais
+      // guarda métodos originais do parent
       const origConsole = {
-        log: console.log,
-        info: console.info,
-        warn: console.warn,
-        error: console.error,
-        debug: console.debug,
+        log: console.log.bind(console),
+        info: console.info.bind(console),
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+        debug: console.debug.bind(console),
       };
 
       // util para stringificar objetos (com tratamento de circular)
@@ -668,7 +660,6 @@
                 if (cache.has(value)) return "[Circular]";
                 cache.add(value);
               }
-              // evita funções longas
               if (typeof value === "function")
                 return `[Function: ${value.name || "anonymous"}]`;
               return value;
@@ -691,39 +682,49 @@
         return String(arg);
       }
 
-      function logToPanel(type, args) {
-        const line = document.createElement("div");
-        line.classList.add("console-line", type);
+      function logToPanel(type, args, origin = "page") {
+        try {
+          const line = document.createElement("div");
+          line.classList.add("console-line");
 
-        const meta = document.createElement("div");
-        meta.className = "console-meta";
-        const time = new Date().toLocaleTimeString();
-        meta.textContent = `${time} — ${type.toUpperCase()}`;
+          // nível/tag visual
+          const typeClass = ["log", "info", "warn", "error"].includes(type)
+            ? type
+            : "log";
+          line.classList.add(typeClass);
 
-        const content = document.createElement("div");
-        content.className = "console-content";
-        // formata cada argumento
-        const text = args.map(formatArg).join(" ");
-        content.textContent = text;
+          const meta = document.createElement("div");
+          meta.className = "console-meta";
+          const time = new Date().toLocaleTimeString();
+          const originLabel = origin === "iframe" ? "IFRAME" : "PAGE";
+          meta.textContent = `${time} — ${originLabel} — ${type.toUpperCase()}`;
 
-        line.appendChild(meta);
-        line.appendChild(content);
+          const content = document.createElement("div");
+          content.className = "console-content";
+          const text = args.map(formatArg).join(" ");
+          content.textContent = text;
 
-        consoleOutput.appendChild(line);
-        // scroll to bottom
-        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+          line.appendChild(meta);
+          line.appendChild(content);
+
+          consoleOutput.appendChild(line);
+          // scroll to bottom
+          consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        } catch (e) {
+          // nada
+        }
       }
 
-      // sobrescreve console.* mantendo saída original
+      // sobrescreve console.* do parent mantendo saída original
       ["log", "info", "warn", "error", "debug"].forEach((type) => {
         console[type] = function (...args) {
           try {
-            origConsole[type].apply(console, args);
+            origConsole[type](...args);
           } catch (e) {
             /* ignore */
           }
           try {
-            logToPanel(type, args);
+            logToPanel(type, args, "page");
           } catch (e) {
             /* ignore */
           }
@@ -735,41 +736,79 @@
         consoleOutput.innerHTML = "";
       });
 
+      // tenta hookar console do iframe (funciona apenas se same-origin)
+      function tryHookIframeConsole() {
+        try {
+          const iw = iframe.contentWindow;
+          if (!iw || !iw.console) {
+            logToPanel("warn", ["Iframe sem console acessível."], "page");
+            return;
+          }
+          if (iw.__consoleHooked) return;
+
+          ["log", "info", "warn", "error", "debug"].forEach((type) => {
+            try {
+              const orig = iw.console[type]
+                ? iw.console[type].bind(iw.console)
+                : () => {};
+              Object.defineProperty(iw.console, type, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: function (...args) {
+                  try {
+                    orig(...args);
+                  } catch (e) {
+                    /* ignore */
+                  }
+                  try {
+                    // encaminha para o painel do parent marcando origem 'iframe'
+                    logToPanel(type, args, "iframe");
+                  } catch (e) {
+                    /* ignore */
+                  }
+                },
+              });
+            } catch (e) {
+              // pode falhar se iframe for cross-origin
+            }
+          });
+
+          iw.__consoleHooked = true;
+          logToPanel(
+            "info",
+            ["Interceptação do console do iframe ativa (se same-origin)."],
+            "page"
+          );
+        } catch (err) {
+          logToPanel(
+            "warn",
+            [
+              "Não foi possível interceptar o console do iframe (provável cross-origin).",
+            ],
+            "page"
+          );
+        }
+      }
+
+      // tenta hookar quando iframe carregar
+      iframe.addEventListener("load", () => {
+        // aguarda um curto tempo pois alguns frameworks sobrescrevem console no boot
+        setTimeout(tryHookIframeConsole, 200);
+      });
+
+      // tentativa inicial (caso já carregado)
+      setTimeout(tryHookIframeConsole, 500);
+
       /**********************
        * Pequenas melhorias de UX (ex.: fechar painel ao clicar fora)
        **********************/
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          menuBar.classList.remove("open");
-          consoleBar.classList.remove("open");
-          menuBar.setAttribute("aria-hidden", "true");
-          consoleBar.setAttribute("aria-hidden", "true");
-          setAriaOpen(toggleMenuBtn, false);
-          setAriaOpen(toggleConsoleBtn, false);
-        }
-      });
-
-      // fechar sidebars ao clicar em espaço vazio do próprio painel (UX)
-      menuBar.addEventListener("click", (ev) => {
-        // evita fechar ao clicar em botões internos
-        if (ev.target === menuBar) {
-          menuBar.classList.remove("open");
-          menuBar.setAttribute("aria-hidden", "true");
-          setAriaOpen(toggleMenuBtn, false);
-        }
-      });
-      consoleBar.addEventListener("click", (ev) => {
-        if (ev.target === consoleBar) {
-          consoleBar.classList.remove("open");
-          consoleBar.setAttribute("aria-hidden", "true");
-          setAriaOpen(toggleConsoleBtn, false);
-        }
-      });
+      // (ja implementado acima)
 
       /**********************
-       * Teste rápido: (descomente para ver entradas iniciais)
+       * Testes rápidos (descomente se quiser)
        **********************/
-      // console.log("Teste: console log");
+      // console.log("Teste: console log do parent");
       // console.info({ foo: "bar", nested: { a: 1 } });
       // console.warn("Aviso exemplo");
       // console.error(new Error("Erro exemplo"));

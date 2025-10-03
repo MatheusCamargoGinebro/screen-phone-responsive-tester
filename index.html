@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframe com controles + Console</title>
+    <style>
+      :root {
+        --sidebar-width: 320px;
+        --sidebar-gap: 10px;
+      }
+
+      * {
+        outline: none;
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+        background: #fafafa;
+      }
+
+      .iframe-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        overflow: hidden;
+        border: 1px solid rgb(163, 163, 163);
+        border-radius: 16px;
+        transition: transform 0.5s ease; /* animação do giro */
+        background: white;
+      }
+
+      .no-transition {
+        transition: none !important; /* usado para resetar instantaneamente */
+      }
+
+      iframe {
+        border: 1px solid transparent;
+        transform-origin: top left;
+        display: block;
+        background: white;
+      }
+
+      .controls {
+        position: fixed;
+        background-color: whitesmoke;
+        left: 0;
+        bottom: 0;
+        padding: 12px;
+        width: 18rem;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        z-index: 100010;
+      }
+
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+        color: #333;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      input[type="range"] {
+        flex: 1;
+      }
+
+      input[type="number"] {
+        width: 70px;
+      }
+
+      button {
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: white;
+      }
+
+      /* Toggle buttons (menu / console) */
+      #toggleMenuBtn,
+      #toggleConsoleBtn {
+        position: fixed;
+        top: 10px;
+        z-index: 100020;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        background: white;
+      }
+
+      #toggleMenuBtn {
+        right: 60px;
+      }
+
+      #toggleConsoleBtn {
+        right: 10px;
+      }
+
+      /* Sidebars padrões */
+      .sideBar {
+        position: fixed;
+        top: 0;
+        right: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width);
+        height: 100%;
+        background-color: #f5f5f5;
+        box-shadow: -2px 0 18px rgba(2, 6, 23, 0.08);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--sidebar-gap);
+        transition: right 0.28s ease;
+        z-index: 100015;
+        overflow: hidden;
+      }
+
+      .sideBar.open {
+        right: 0;
+      }
+
+      .sideBar header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .sideBar header strong {
+        font-size: 14px;
+      }
+
+      .preset {
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 8px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .preset.active {
+        background-color: #d0ebff;
+        border-color: #339af0;
+      }
+
+      #rotateBtn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        transform: rotate(-45deg);
+        z-index: 100030;
+        background-color: #339af0;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
+      }
+
+      /* Console styles */
+      #consoleOutput {
+        flex: 1;
+        overflow-y: auto;
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e6e6e6;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+          monospace;
+        font-size: 12px;
+        color: #0b1220;
+        white-space: pre-wrap;
+      }
+
+      .console-line {
+        padding: 6px 8px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        word-break: break-word;
+        line-height: 1.2;
+      }
+
+      .console-meta {
+        font-size: 11px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+
+      .log {
+        background: #fff;
+        color: #0b1220;
+        border: 1px solid #eee;
+      }
+      .info {
+        background: #e8f5ff;
+        color: #0366d6;
+        border: 1px solid #dbefff;
+      }
+      .warn {
+        background: #fff7e6;
+        color: #b46900;
+        border: 1px solid #ffe9bf;
+      }
+      .error {
+        background: #fff0f0;
+        color: #9b1c1c;
+        border: 1px solid #ffd6d6;
+      }
+
+      /* small helper buttons inside sidebars */
+      .sideBar .controls-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .sideBar .controls-row button {
+        flex: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Controls principais -->
+    <div class="controls" aria-label="Controles do iframe">
+      <label>
+        Largura:
+        <div class="input-group">
+          <input
+            type="range"
+            id="widthSlider"
+            min="200"
+            max="6000"
+            value="640"
+          />
+          <input
+            type="number"
+            id="widthInput"
+            min="200"
+            max="6000"
+            value="640"
+          />
+        </div>
+      </label>
+
+      <label>
+        Altura:
+        <div class="input-group">
+          <input
+            type="range"
+            id="heightSlider"
+            min="200"
+            max="6000"
+            value="800"
+          />
+          <input
+            type="number"
+            id="heightInput"
+            min="200"
+            max="6000"
+            value="800"
+          />
+        </div>
+      </label>
+
+      <label>
+        Escala:
+        <div class="input-group">
+          <input
+            type="range"
+            id="scaleSlider"
+            min="0.1"
+            max="2"
+            step="0.01"
+            value="1"
+          />
+          <input
+            type="number"
+            id="scaleInput"
+            min="0.1"
+            max="2"
+            step="0.01"
+            value="1"
+          />
+        </div>
+      </label>
+
+      <div style="display: flex; gap: 8px">
+        <button id="resetBtn">Resetar para celular</button>
+        <button id="applySizeBtn" title="Aplicar tamanho atual">Aplicar</button>
+      </div>
+    </div>
+
+    <!-- Iframe / wrapper -->
+    <div class="iframe-wrapper" id="iframeWrapper">
+      <iframe id="myIframe" src="http://localhost:8081/"></iframe>
+    </div>
+
+    <!-- Toggle buttons (menu / console) -->
+    <button id="toggleMenuBtn" aria-expanded="false">☰</button>
+    <button id="toggleConsoleBtn" aria-expanded="false">🖥</button>
+
+    <!-- Predefinições (menu) -->
+    <aside id="menuBar" class="sideBar" aria-hidden="true">
+      <header>
+        <strong>Predefinições</strong>
+        <div class="controls-row">
+          <button id="closeMenuBtn">Fechar</button>
+        </div>
+      </header>
+
+      <div
+        id="presetList"
+        style="display: flex; flex-direction: column; gap: 8px"
+      >
+        <!-- Presets (sem duplicatas em resolução) -->
+        <button
+          class="preset"
+          data-width="1080"
+          data-height="2340"
+          data-scale="0.38"
+        >
+          Samsung Galaxy A15 5G
+        </button>
+        <button
+          class="preset"
+          data-width="1080"
+          data-height="2400"
+          data-scale="0.38"
+        >
+          Motorola Moto G54 5G
+        </button>
+        <button
+          class="preset"
+          data-width="1440"
+          data-height="3120"
+          data-scale="0.25"
+        >
+          Samsung Galaxy S24 Ultra
+        </button>
+        <button
+          class="preset"
+          data-width="1220"
+          data-height="2712"
+          data-scale="0.28"
+        >
+          Xiaomi Poco X6 Pro
+        </button>
+        <button
+          class="preset"
+          data-width="1080"
+          data-height="2640"
+          data-scale="0.35"
+        >
+          Samsung Galaxy Z Flip 5
+        </button>
+        <button
+          class="preset"
+          data-width="720"
+          data-height="1612"
+          data-scale="0.55"
+        >
+          Motorola Moto G24
+        </button>
+        <button
+          class="preset"
+          data-width="1179"
+          data-height="2556"
+          data-scale="0.35"
+        >
+          iPhone 15
+        </button>
+        <button
+          class="preset"
+          data-width="1170"
+          data-height="2532"
+          data-scale="0.36"
+        >
+          iPhone 13
+        </button>
+        <button
+          class="preset"
+          data-width="828"
+          data-height="1792"
+          data-scale="0.5"
+        >
+          iPhone 11
+        </button>
+        <button
+          class="preset"
+          data-width="750"
+          data-height="1334"
+          data-scale="0.65"
+        >
+          iPhone SE (3ª Geração)
+        </button>
+        <button
+          class="preset"
+          data-width="1440"
+          data-height="3088"
+          data-scale="0.25"
+        >
+          Samsung Galaxy S22 Ultra
+        </button>
+      </div>
+    </aside>
+
+    <!-- Console (novo painel) -->
+    <aside id="consoleBar" class="sideBar" aria-hidden="true">
+      <header>
+        <strong>Console</strong>
+        <div class="controls-row">
+          <button id="clearConsoleBtn">Limpar</button>
+          <button id="closeConsoleBtn">Fechar</button>
+        </div>
+      </header>
+
+      <div id="consoleOutput" aria-live="polite"></div>
+    </aside>
+
+    <button id="rotateBtn" title="Rotacionar">⟳</button>
+
+    <script>
+      /**********************
+       * Seleções iniciais
+       **********************/
+      const iframe = document.getElementById("myIframe");
+      const wrapper = document.getElementById("iframeWrapper");
+
+      const widthSlider = document.getElementById("widthSlider");
+      const widthInput = document.getElementById("widthInput");
+      const heightSlider = document.getElementById("heightSlider");
+      const heightInput = document.getElementById("heightInput");
+      const scaleSlider = document.getElementById("scaleSlider");
+      const scaleInput = document.getElementById("scaleInput");
+
+      const resetBtn = document.getElementById("resetBtn");
+      const applySizeBtn = document.getElementById("applySizeBtn");
+
+      const toggleMenuBtn = document.getElementById("toggleMenuBtn");
+      const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");
+
+      const menuBar = document.getElementById("menuBar");
+      const closeMenuBtn = document.getElementById("closeMenuBtn");
+
+      const consoleBar = document.getElementById("consoleBar");
+      const closeConsoleBtn = document.getElementById("closeConsoleBtn");
+      const clearConsoleBtn = document.getElementById("clearConsoleBtn");
+      const consoleOutput = document.getElementById("consoleOutput");
+
+      const presetButtons = document.querySelectorAll(".preset");
+      const rotateBtn = document.getElementById("rotateBtn");
+
+      let isLandscape = false; // controla se está deitado
+
+      /**********************
+       * Atualizações de iframe
+       **********************/
+      function updateIframeSize() {
+        const width = Math.max(1, parseInt(widthSlider.value || 0));
+        const height = Math.max(1, parseInt(heightSlider.value || 0));
+        iframe.width = width;
+        iframe.height = height;
+        updateWrapperSize();
+      }
+
+      function updateIframeScale() {
+        const scale = Math.max(0.01, parseFloat(scaleSlider.value || 1));
+        // transform de escala aplicado ao iframe (mantendo origin top-left)
+        iframe.style.transform = `scale(${scale})`;
+        updateWrapperSize();
+      }
+
+      function updateWrapperSize() {
+        const scale = Math.max(0.01, parseFloat(scaleSlider.value || 1));
+        const width = Math.max(1, parseInt(widthSlider.value || 0));
+        const height = Math.max(1, parseInt(heightSlider.value || 0));
+        wrapper.style.width = `${width * scale}px`;
+        wrapper.style.height = `${height * scale}px`;
+      }
+
+      // sincroniza sliders e inputs numéricos
+      function syncInputs(slider, input, callback) {
+        slider.addEventListener("input", () => {
+          input.value = slider.value;
+          callback();
+        });
+        input.addEventListener("input", () => {
+          // evita valor vazio
+          if (input.value === "") return;
+          slider.value = input.value;
+          callback();
+        });
+      }
+
+      syncInputs(widthSlider, widthInput, updateIframeSize);
+      syncInputs(heightSlider, heightInput, updateIframeSize);
+      syncInputs(scaleSlider, scaleInput, updateIframeScale);
+
+      // botão aplicar (aplica os valores atuais)
+      applySizeBtn.addEventListener("click", () => {
+        updateIframeSize();
+        updateIframeScale();
+      });
+
+      // reset padrão para celular
+      resetBtn.addEventListener("click", () => {
+        widthSlider.value = widthInput.value = 375;
+        heightSlider.value = heightInput.value = 667;
+        scaleSlider.value = scaleInput.value = 1;
+        updateIframeSize();
+        updateIframeScale();
+        clearActivePresets();
+      });
+
+      // inicializa
+      updateIframeSize();
+      updateIframeScale();
+
+      /**********************
+       * Predefinições (menu)
+       **********************/
+      function clearActivePresets() {
+        presetButtons.forEach((b) => b.classList.remove("active"));
+      }
+
+      function applyPreset(btn) {
+        let width = parseInt(btn.getAttribute("data-width"));
+        let height = parseInt(btn.getAttribute("data-height"));
+        const scale = parseFloat(btn.getAttribute("data-scale"));
+
+        if (isLandscape) {
+          // se está deitado, aplicar invertido
+          [width, height] = [height, width];
+        }
+
+        widthSlider.value = widthInput.value = width;
+        heightSlider.value = heightInput.value = height;
+        scaleSlider.value = scaleInput.value = scale;
+
+        // animações suaves já são aplicadas por CSS no wrapper/iframe
+        updateIframeSize();
+        updateIframeScale();
+
+        clearActivePresets();
+        btn.classList.add("active");
+      }
+
+      presetButtons.forEach((btn) => {
+        btn.addEventListener("click", () => applyPreset(btn));
+      });
+
+      /**********************
+       * Toggle sidebars
+       **********************/
+      function setAriaOpen(button, isOpen) {
+        button.setAttribute("aria-expanded", String(isOpen));
+      }
+
+      toggleMenuBtn.addEventListener("click", () => {
+        const opened = menuBar.classList.toggle("open");
+        menuBar.setAttribute("aria-hidden", String(!opened));
+        setAriaOpen(toggleMenuBtn, opened);
+      });
+      closeMenuBtn.addEventListener("click", () => {
+        menuBar.classList.remove("open");
+        menuBar.setAttribute("aria-hidden", "true");
+        setAriaOpen(toggleMenuBtn, false);
+      });
+
+      toggleConsoleBtn.addEventListener("click", () => {
+        const opened = consoleBar.classList.toggle("open");
+        consoleBar.setAttribute("aria-hidden", String(!opened));
+        setAriaOpen(toggleConsoleBtn, opened);
+      });
+      closeConsoleBtn.addEventListener("click", () => {
+        consoleBar.classList.remove("open");
+        consoleBar.setAttribute("aria-hidden", "true");
+        setAriaOpen(toggleConsoleBtn, false);
+      });
+
+      /**********************
+       * Rotacionar com animação + swap de valores
+       *
+       * Comportamento:
+       * - Quando usuário clica:
+       *   • wrapper anima rotate(-90deg) (se estava em pé) ou rotate(90deg) (se estava deitado)
+       *   • após tempo de animação (500ms), trocamos width<->height
+       *   • então resetamos a rotação instantaneamente para 0 (sem transição)
+       **********************/
+      rotateBtn.addEventListener("click", () => {
+        const ANIM_MS = 500;
+
+        // anima 90 graus para esquerda (quando em pé) ou direita (quando deitado)
+        if (!isLandscape) {
+          wrapper.style.transform = "translate(-50%, -50%) rotate(-90deg)";
+        } else {
+          wrapper.style.transform = "translate(-50%, -50%) rotate(90deg)";
+        }
+
+        setTimeout(() => {
+          // troca largura e altura (mantém inputs sincronizados)
+          const currentWidth = widthSlider.value;
+          const currentHeight = heightSlider.value;
+          widthSlider.value = widthInput.value = currentHeight;
+          heightSlider.value = heightInput.value = currentWidth;
+
+          // aplica mudanças
+          updateIframeSize();
+          updateIframeScale();
+          clearActivePresets();
+
+          // reseta rotação INSTANTANEAMENTE (remove transição temporariamente)
+          wrapper.classList.add("no-transition");
+          wrapper.style.transform = "translate(-50%, -50%) rotate(0deg)";
+          // força repaint/reflow para garantir a aplicação
+          void wrapper.offsetHeight;
+          wrapper.classList.remove("no-transition");
+
+          // alterna o estado de orientação
+          isLandscape = !isLandscape;
+        }, ANIM_MS);
+      });
+
+      /**********************
+       * Console capture (monkey patch)
+       **********************/
+      // guarda métodos originais
+      const origConsole = {
+        log: console.log,
+        info: console.info,
+        warn: console.warn,
+        error: console.error,
+        debug: console.debug,
+      };
+
+      // util para stringificar objetos (com tratamento de circular)
+      function safeStringify(obj) {
+        const cache = new WeakSet();
+        try {
+          return JSON.stringify(
+            obj,
+            function (key, value) {
+              if (typeof value === "object" && value !== null) {
+                if (cache.has(value)) return "[Circular]";
+                cache.add(value);
+              }
+              // evita funções longas
+              if (typeof value === "function")
+                return `[Function: ${value.name || "anonymous"}]`;
+              return value;
+            },
+            2
+          );
+        } catch (e) {
+          return String(obj);
+        }
+      }
+
+      function formatArg(arg) {
+        if (arg === null) return "null";
+        if (arg === undefined) return "undefined";
+        const t = typeof arg;
+        if (t === "string") return arg;
+        if (t === "number" || t === "boolean") return String(arg);
+        if (t === "function") return `[Function ${arg.name || "anonymous"}]`;
+        if (t === "object") return safeStringify(arg);
+        return String(arg);
+      }
+
+      function logToPanel(type, args) {
+        const line = document.createElement("div");
+        line.classList.add("console-line", type);
+
+        const meta = document.createElement("div");
+        meta.className = "console-meta";
+        const time = new Date().toLocaleTimeString();
+        meta.textContent = `${time} — ${type.toUpperCase()}`;
+
+        const content = document.createElement("div");
+        content.className = "console-content";
+        // formata cada argumento
+        const text = args.map(formatArg).join(" ");
+        content.textContent = text;
+
+        line.appendChild(meta);
+        line.appendChild(content);
+
+        consoleOutput.appendChild(line);
+        // scroll to bottom
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      }
+
+      // sobrescreve console.* mantendo saída original
+      ["log", "info", "warn", "error", "debug"].forEach((type) => {
+        console[type] = function (...args) {
+          try {
+            origConsole[type].apply(console, args);
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            logToPanel(type, args);
+          } catch (e) {
+            /* ignore */
+          }
+        };
+      });
+
+      // limpar console no painel
+      clearConsoleBtn.addEventListener("click", () => {
+        consoleOutput.innerHTML = "";
+      });
+
+      /**********************
+       * Pequenas melhorias de UX (ex.: fechar painel ao clicar fora)
+       **********************/
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          menuBar.classList.remove("open");
+          consoleBar.classList.remove("open");
+          menuBar.setAttribute("aria-hidden", "true");
+          consoleBar.setAttribute("aria-hidden", "true");
+          setAriaOpen(toggleMenuBtn, false);
+          setAriaOpen(toggleConsoleBtn, false);
+        }
+      });
+
+      // fechar sidebars ao clicar em espaço vazio do próprio painel (UX)
+      menuBar.addEventListener("click", (ev) => {
+        // evita fechar ao clicar em botões internos
+        if (ev.target === menuBar) {
+          menuBar.classList.remove("open");
+          menuBar.setAttribute("aria-hidden", "true");
+          setAriaOpen(toggleMenuBtn, false);
+        }
+      });
+      consoleBar.addEventListener("click", (ev) => {
+        if (ev.target === consoleBar) {
+          consoleBar.classList.remove("open");
+          consoleBar.setAttribute("aria-hidden", "true");
+          setAriaOpen(toggleConsoleBtn, false);
+        }
+      });
+
+      /**********************
+       * Teste rápido: (descomente para ver entradas iniciais)
+       **********************/
+      // console.log("Teste: console log");
+      // console.info({ foo: "bar", nested: { a: 1 } });
+      // console.warn("Aviso exemplo");
+      // console.error(new Error("Erro exemplo"));
+    </script>
+  </body>
+</html>

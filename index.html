@@ -6,7 +6,7 @@
     <title>Iframe com controles + Console</title>
     <style>
       :root {
-        --sidebar-width: 320px;
+        --sidebar-width: 500px;
         --sidebar-gap: 10px;
       }
 
@@ -180,7 +180,7 @@
         right: 10px;
         transform: rotate(-45deg);
         z-index: 100030;
-        background-color: #339af0;
+        background-color: #252525;
         color: white;
         border: none;
         border-radius: 50%;
@@ -736,69 +736,27 @@
         consoleOutput.innerHTML = "";
       });
 
-      // tenta hookar console do iframe (funciona apenas se same-origin)
-      function tryHookIframeConsole() {
-        try {
-          const iw = iframe.contentWindow;
-          if (!iw || !iw.console) {
-            logToPanel("warn", ["Iframe sem console acessível."], "page");
-            return;
+      ["log", "info", "warn", "error", "debug"].forEach((type) => {
+        const original = console[type].bind(console);
+        console[type] = function (...args) {
+          original(...args); // ainda mostra no console do iframe
+          try {
+            window.parent.postMessage(
+              { type: "console", level: type, args },
+              "*"
+            );
+          } catch (e) {
+            // falha silenciosa
           }
-          if (iw.__consoleHooked) return;
-
-          ["log", "info", "warn", "error", "debug"].forEach((type) => {
-            try {
-              const orig = iw.console[type]
-                ? iw.console[type].bind(iw.console)
-                : () => {};
-              Object.defineProperty(iw.console, type, {
-                configurable: true,
-                enumerable: true,
-                writable: true,
-                value: function (...args) {
-                  try {
-                    orig(...args);
-                  } catch (e) {
-                    /* ignore */
-                  }
-                  try {
-                    // encaminha para o painel do parent marcando origem 'iframe'
-                    logToPanel(type, args, "iframe");
-                  } catch (e) {
-                    /* ignore */
-                  }
-                },
-              });
-            } catch (e) {
-              // pode falhar se iframe for cross-origin
-            }
-          });
-
-          iw.__consoleHooked = true;
-          logToPanel(
-            "info",
-            ["Interceptação do console do iframe ativa (se same-origin)."],
-            "page"
-          );
-        } catch (err) {
-          logToPanel(
-            "warn",
-            [
-              "Não foi possível interceptar o console do iframe (provável cross-origin).",
-            ],
-            "page"
-          );
-        }
-      }
-
-      // tenta hookar quando iframe carregar
-      iframe.addEventListener("load", () => {
-        // aguarda um curto tempo pois alguns frameworks sobrescrevem console no boot
-        setTimeout(tryHookIframeConsole, 200);
+        };
       });
 
-      // tentativa inicial (caso já carregado)
-      setTimeout(tryHookIframeConsole, 500);
+      window.addEventListener("message", (event) => {
+        if (event.data?.type === "console") {
+          const { level, args } = event.data;
+          logToPanel(level, args, "iframe"); // sua função existente
+        }
+      });
 
       /**********************
        * Pequenas melhorias de UX (ex.: fechar painel ao clicar fora)

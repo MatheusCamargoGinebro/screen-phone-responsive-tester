@@ -7,8 +7,21 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Controls principais (sem 'Aplicar' nem 'Resetar') -->
-    <div class="controls" aria-label="Controles do iframe">
+    <!-- Controls convertidos para uma sidebar (MenuBar) -->
+    <!-- Botão que abre/fecha a sidebar de Controles -->
+    <button id="toggleControlsBtn" aria-expanded="false" title="Controles">
+      <img src="./imgs/controls.png" alt="Controles" />
+    </button>
+
+    <!-- Sidebar de Controles (substitui a antiga div .controls) -->
+    <aside id="controlsBar" class="sideBar" aria-hidden="true">
+      <header>
+        <strong>Controles</strong>
+        <div class="controls-row">
+          <button id="closeControlsBtn">Fechar</button>
+        </div>
+      </header>
+
       <label>
         Largura:
         <div class="input-group">
@@ -70,7 +83,7 @@
           />
         </div>
       </label>
-    </div>
+    </aside>
 
     <!-- Iframe / wrapper -->
     <div class="iframe-wrapper" id="iframeWrapper">

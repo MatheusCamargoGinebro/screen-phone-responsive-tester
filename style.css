@@ -46,20 +46,7 @@ iframe {
   background: white;
 }
 
-.controls {
-  position: fixed;
-  left: 10px;
-  bottom: 10px;
-  padding: 15px;
-  border-radius: 8px;
-  width: 18rem;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  z-index: 100010;
-}
+/* antiga .controls transformada em controlsBar (usa .sideBar) */
 
 label {
   display: flex;
@@ -129,9 +116,36 @@ button {
   box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
 }
 
+/* Toggle button para Controls (igual comportamento dos outros toggles) */
+#toggleControlsBtn {
+  position: fixed;
+  z-index: 100020;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0;
+  transition: right 0.28s ease, transform 0.12s ease;
+  box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
+  right: 10px;
+  top: 130px; /* próximo ao rotateBtn padrão */
+}
+
+#toggleControlsBtn:hover {
+  scale: 1.1;
+  background: #f5f5f5;
+}
+
+#toggleControlsBtn:hover img {
+  transform: rotate(30deg);
+}
+
+/* Ao abrir qualquer sidebar, movemos TODOS os toggles para a esquerda do sidebar (mesma regra que para os outros) */
+body.sidebar-open #toggleControlsBtn {
+  right: calc(var(--sidebar-width) + 10px);
+}
+
 #toggleMenuBtn {
   right: 10px;
-  top: 10px;
+  top: 70px;
 
   transition: 0.2s;
 }
@@ -148,7 +162,7 @@ button {
 
 #toggleConsoleBtn {
   right: 10px;
-  top: 70px;
+  top: 10px;
 }
 
 #toggleConsoleBtn:hover {
@@ -219,7 +233,7 @@ body.sidebar-open #rotateBtn {
   border-radius: 8px;
   border: 0;
   position: absolute;
-  top: 130px;
+  top: 190px;
   right: 10px;
   z-index: 100030;
   color: white;

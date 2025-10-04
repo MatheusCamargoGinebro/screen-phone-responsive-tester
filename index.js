@@ -15,11 +15,14 @@ const scaleInput = document.getElementById("scaleInput");      // Campo numéric
 // ====== Botões de alternância de menus ======
 const toggleMenuBtn = document.getElementById("toggleMenuBtn");        // Botão que abre/fecha a barra lateral "Menu"
 const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");  // Botão que abre/fecha a barra lateral "Console"
+const toggleControlsBtn = document.getElementById("toggleControlsBtn"); // Botão que abre/fecha a barra lateral "Controles"
 
 
 // ====== Elementos das barras laterais ======
 const menuBar = document.getElementById("menuBar");               // Barra lateral do menu
 const closeMenuBtn = document.getElementById("closeMenuBtn");     // Botão para fechar o menu
+const controlsBar = document.getElementById("controlsBar");       // Barra lateral de controles
+const closeControlsBtn = document.getElementById("closeControlsBtn"); // Botão para fechar controles
 
 const consoleBar = document.getElementById("consoleBar");         // Barra lateral do console
 const closeConsoleBtn = document.getElementById("closeConsoleBtn"); // Botão para fechar o console
@@ -149,6 +152,10 @@ function closeAllSidebars() {
     consoleBar.setAttribute("aria-hidden", "true");
     setAriaOpen(toggleConsoleBtn, false);
 
+    controlsBar.classList.remove("open");
+    controlsBar.setAttribute("aria-hidden", "true");
+    setAriaOpen(toggleControlsBtn, false);
+
     document.body.classList.remove("sidebar-open");
 }
 
@@ -156,27 +163,23 @@ function closeAllSidebars() {
  * Abre uma das sidebars ("menu" ou "console") e fecha a outra.
  */
 function openSidebar(which) {
-    if (which === "menu") {
-        // Fecha o console
-        consoleBar.classList.remove("open");
-        consoleBar.setAttribute("aria-hidden", "true");
-        setAriaOpen(toggleConsoleBtn, false);
+    // Fecha tudo primeiro para garantir que apenas uma sidebar esteja aberta
+    closeAllSidebars();
 
-        // Abre o menu
+    if (which === "menu") {
         menuBar.classList.add("open");
         menuBar.setAttribute("aria-hidden", "false");
         setAriaOpen(toggleMenuBtn, true);
     } else if (which === "console") {
-        // Fecha o menu
-        menuBar.classList.remove("open");
-        menuBar.setAttribute("aria-hidden", "true");
-        setAriaOpen(toggleMenuBtn, false);
-
-        // Abre o console
         consoleBar.classList.add("open");
         consoleBar.setAttribute("aria-hidden", "false");
         setAriaOpen(toggleConsoleBtn, true);
+    } else if (which === "controls") {
+        controlsBar.classList.add("open");
+        controlsBar.setAttribute("aria-hidden", "false");
+        setAriaOpen(toggleControlsBtn, true);
     }
+
     document.body.classList.add("sidebar-open");
 }
 
@@ -193,9 +196,16 @@ toggleConsoleBtn.addEventListener("click", () => {
     else openSidebar("console");
 });
 
+toggleControlsBtn.addEventListener("click", () => {
+    const wasOpen = controlsBar.classList.contains("open");
+    if (wasOpen) closeAllSidebars();
+    else openSidebar("controls");
+});
+
 // Botões de fechar
 closeMenuBtn.addEventListener("click", closeAllSidebars);
 closeConsoleBtn.addEventListener("click", closeAllSidebars);
+closeControlsBtn.addEventListener("click", closeAllSidebars);
 
 // Fecha sidebars com tecla ESC
 document.addEventListener("keydown", (e) => {

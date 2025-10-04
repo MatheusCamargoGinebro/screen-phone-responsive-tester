@@ -82,3 +82,4 @@ Toda contribuição é bem-vinda — seja de design, lógica ou documentação.
 Este projeto é de uso livre para fins educacionais e de desenvolvimento.
 
 *PS: Eu aceito uma estrelinha do git!* ⭐
+

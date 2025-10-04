@@ -1,0 +1,308 @@
+:root {
+  --sidebar-width: 400px;
+  --sidebar-gap: 10px;
+}
+
+* {
+  outline: none;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  background: #fafafa;
+}
+
+.iframe-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border: 1px solid rgb(163, 163, 163);
+  border-radius: 16px;
+  transition: transform 0.5s ease; /* animação do giro */
+  background: white;
+}
+
+.no-transition {
+  transition: none !important; /* usado para resetar instantaneamente */
+}
+
+iframe {
+  border: 1px solid transparent;
+  transform-origin: top left;
+  display: block;
+  background: white;
+}
+
+.controls {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  padding: 15px;
+  border-radius: 8px;
+  width: 18rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100010;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #333;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none; /* remove o estilo padrão no Chrome/Safari */
+  appearance: none;
+  height: 6px;
+  background: #8b8b8b; /* cor do trilho */
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Chrome / Edge / Safari */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3d3d3d; /* cor do botão */
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #000000; /* escurece ao passar o mouse */
+}
+
+input[type="number"] {
+  width: 70px;
+  padding: 10px 5px 10px 5px;
+  outline: none;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+}
+
+/* Toggle buttons (menu / console) */
+#toggleMenuBtn,
+#toggleConsoleBtn {
+  position: fixed;
+  z-index: 100020;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0;
+  transition: right 0.28s ease, transform 0.12s ease;
+  box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
+}
+
+#toggleMenuBtn {
+  right: 10px;
+  top: 10px;
+
+  transition: 0.2s;
+}
+
+#toggleMenuBtn:hover {
+  scale: 1.1;
+  background: #f5f5f5;
+}
+
+#toggleMenuBtn:hover img,
+#toggleConsoleBtn:hover img {
+  transform: rotate(30deg);
+}
+
+#toggleConsoleBtn {
+  right: 10px;
+  top: 70px;
+}
+
+#toggleConsoleBtn:hover {
+  scale: 1.1;
+  background: #f5f5f5;
+}
+
+/* Quando qualquer sidebar estiver aberta, movemos OS DOIS botões para ficar ao lado do sidebar */
+body.sidebar-open #toggleMenuBtn {
+  right: calc(var(--sidebar-width) + 10px);
+}
+body.sidebar-open #toggleConsoleBtn {
+  right: calc(var(--sidebar-width) + 10px);
+}
+body.sidebar-open #rotateBtn {
+  right: calc(var(--sidebar-width) + 10px);
+}
+
+/* Sidebars padrões */
+.sideBar {
+  position: fixed;
+  top: 0;
+  right: calc(-1 * var(--sidebar-width));
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: #f5f5f5;
+  box-shadow: -2px 0 18px rgba(2, 6, 23, 0.08);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sidebar-gap);
+  transition: right 0.28s ease;
+  z-index: 100015;
+  overflow: hidden;
+}
+
+.sideBar.open {
+  right: 0;
+}
+
+.sideBar header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sideBar header strong {
+  font-size: 14px;
+}
+
+.preset {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset.active {
+  background-color: #d0ebff;
+  border-color: #339af0;
+}
+
+#rotateBtn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0;
+  position: absolute;
+  top: 130px;
+  right: 10px;
+  z-index: 100030;
+  color: white;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
+  transition: right 0.28s ease, transform 0.12s ease;
+}
+
+button img {
+  width: 30px;
+}
+
+#rotateBtn img {
+  transform: rotate(-45deg);
+}
+
+#rotateBtn:hover img {
+  transform: rotate(-0deg);
+}
+
+#rotateBtn:hover {
+  scale: 1.1;
+}
+
+/* Console styles */
+#consoleOutput {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    monospace;
+  font-size: 12px;
+  color: #0b1220;
+  white-space: pre-wrap;
+}
+
+.console-line {
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.console-meta {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.log {
+  background: #fff;
+  color: #0b1220;
+  border: 1px solid #eee;
+}
+.info {
+  background: #e8f5ff;
+  color: #0366d6;
+  border: 1px solid #dbefff;
+}
+.warn {
+  background: #fff7e6;
+  color: #b46900;
+  border: 1px solid #ffe9bf;
+}
+.error {
+  background: #fff0f0;
+  color: #9b1c1c;
+  border: 1px solid #ffd6d6;
+}
+
+/* small helper buttons inside sidebars */
+.sideBar .controls-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sideBar .controls-row button {
+  flex: none;
+}

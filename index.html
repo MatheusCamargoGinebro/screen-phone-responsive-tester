@@ -4,253 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iframe com controles + Console</title>
-    <style>
-      :root {
-        --sidebar-width: 500px;
-        --sidebar-gap: 10px;
-      }
-
-      * {
-        outline: none;
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        width: 100vw;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        position: relative;
-        background: #fafafa;
-      }
-
-      .iframe-wrapper {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        overflow: hidden;
-        border: 1px solid rgb(163, 163, 163);
-        border-radius: 16px;
-        transition: transform 0.5s ease; /* animação do giro */
-        background: white;
-      }
-
-      .no-transition {
-        transition: none !important; /* usado para resetar instantaneamente */
-      }
-
-      iframe {
-        border: 1px solid transparent;
-        transform-origin: top left;
-        display: block;
-        background: white;
-      }
-
-      .controls {
-        position: fixed;
-        background-color: whitesmoke;
-        left: 0;
-        bottom: 0;
-        padding: 12px;
-        width: 18rem;
-        border-radius: 8px;
-        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        z-index: 100010;
-      }
-
-      label {
-        display: flex;
-        flex-direction: column;
-        font-size: 13px;
-        color: #333;
-      }
-
-      .input-group {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      input[type="range"] {
-        flex: 1;
-      }
-
-      input[type="number"] {
-        width: 70px;
-      }
-
-      button {
-        padding: 6px 10px;
-        font-size: 13px;
-        cursor: pointer;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background: white;
-      }
-
-      /* Toggle buttons (menu / console) */
-      #toggleMenuBtn,
-      #toggleConsoleBtn {
-        position: fixed;
-        top: 10px;
-        z-index: 100020;
-        padding: 8px 10px;
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
-        background: white;
-        transition: right 0.28s ease, transform 0.12s ease;
-      }
-
-      #toggleMenuBtn {
-        right: 60px;
-      }
-
-      #toggleConsoleBtn {
-        right: 10px;
-      }
-
-      /* Quando qualquer sidebar estiver aberta, movemos OS DOIS botões para ficar ao lado do sidebar */
-      body.sidebar-open #toggleMenuBtn {
-        right: calc(var(--sidebar-width) + 60px);
-      }
-      body.sidebar-open #toggleConsoleBtn {
-        right: calc(var(--sidebar-width) + 10px);
-      }
-
-      /* Sidebars padrões */
-      .sideBar {
-        position: fixed;
-        top: 0;
-        right: calc(-1 * var(--sidebar-width));
-        width: var(--sidebar-width);
-        height: 100%;
-        background-color: #f5f5f5;
-        box-shadow: -2px 0 18px rgba(2, 6, 23, 0.08);
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        gap: var(--sidebar-gap);
-        transition: right 0.28s ease;
-        z-index: 100015;
-        overflow: hidden;
-      }
-
-      .sideBar.open {
-        right: 0;
-      }
-
-      .sideBar header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-      }
-
-      .sideBar header strong {
-        font-size: 14px;
-      }
-
-      .preset {
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 8px;
-        text-align: left;
-        cursor: pointer;
-      }
-
-      .preset.active {
-        background-color: #d0ebff;
-        border-color: #339af0;
-      }
-
-      #rotateBtn {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        transform: rotate(-45deg);
-        z-index: 100030;
-        background-color: #252525;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(51, 154, 240, 0.18);
-      }
-
-      /* Console styles */
-      #consoleOutput {
-        flex: 1;
-        overflow-y: auto;
-        background: #fff;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #e6e6e6;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
-          monospace;
-        font-size: 12px;
-        color: #0b1220;
-        white-space: pre-wrap;
-      }
-
-      .console-line {
-        padding: 6px 8px;
-        border-radius: 6px;
-        margin-bottom: 6px;
-        word-break: break-word;
-        line-height: 1.2;
-      }
-
-      .console-meta {
-        font-size: 11px;
-        color: #6b7280;
-        margin-bottom: 4px;
-      }
-
-      .log {
-        background: #fff;
-        color: #0b1220;
-        border: 1px solid #eee;
-      }
-      .info {
-        background: #e8f5ff;
-        color: #0366d6;
-        border: 1px solid #dbefff;
-      }
-      .warn {
-        background: #fff7e6;
-        color: #b46900;
-        border: 1px solid #ffe9bf;
-      }
-      .error {
-        background: #fff0f0;
-        color: #9b1c1c;
-        border: 1px solid #ffd6d6;
-      }
-
-      /* small helper buttons inside sidebars */
-      .sideBar .controls-row {
-        display: flex;
-        gap: 8px;
-      }
-
-      .sideBar .controls-row button {
-        flex: none;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <!-- Controls principais (sem 'Aplicar' nem 'Resetar') -->
@@ -263,14 +17,14 @@
             id="widthSlider"
             min="200"
             max="6000"
-            value="640"
+            value="1080"
           />
           <input
             type="number"
             id="widthInput"
             min="200"
             max="6000"
-            value="640"
+            value="1080"
           />
         </div>
       </label>
@@ -283,14 +37,14 @@
             id="heightSlider"
             min="200"
             max="6000"
-            value="800"
+            value="2340"
           />
           <input
             type="number"
             id="heightInput"
             min="200"
             max="6000"
-            value="800"
+            value="2340"
           />
         </div>
       </label>
@@ -304,7 +58,7 @@
             min="0.1"
             max="2"
             step="0.01"
-            value="1"
+            value="0.38"
           />
           <input
             type="number"
@@ -312,7 +66,7 @@
             min="0.1"
             max="2"
             step="0.01"
-            value="1"
+            value="0.38"
           />
         </div>
       </label>
@@ -325,10 +79,10 @@
 
     <!-- Toggle buttons (menu / console) -->
     <button id="toggleMenuBtn" aria-expanded="false" title="Predefinições">
-      ☰
+      <img src="./imgs/phone.png" />
     </button>
     <button id="toggleConsoleBtn" aria-expanded="false" title="Console">
-      🖥
+      <img src="./imgs/console.png" />
     </button>
 
     <!-- Predefinições (menu) -->
@@ -409,367 +163,10 @@
       <div id="consoleOutput" aria-live="polite"></div>
     </aside>
 
-    <button id="rotateBtn" title="Rotacionar">⟳</button>
+    <button id="rotateBtn" title="Rotacionar">
+      <img src="./imgs/rotate.png" />
+    </button>
 
-    <script>
-      /**********************
-       * Seleções iniciais
-       **********************/
-      const iframe = document.getElementById("myIframe");
-      const wrapper = document.getElementById("iframeWrapper");
-
-      const widthSlider = document.getElementById("widthSlider");
-      const widthInput = document.getElementById("widthInput");
-      const heightSlider = document.getElementById("heightSlider");
-      const heightInput = document.getElementById("heightInput");
-      const scaleSlider = document.getElementById("scaleSlider");
-      const scaleInput = document.getElementById("scaleInput");
-
-      const toggleMenuBtn = document.getElementById("toggleMenuBtn");
-      const toggleConsoleBtn = document.getElementById("toggleConsoleBtn");
-
-      const menuBar = document.getElementById("menuBar");
-      const closeMenuBtn = document.getElementById("closeMenuBtn");
-
-      const consoleBar = document.getElementById("consoleBar");
-      const closeConsoleBtn = document.getElementById("closeConsoleBtn");
-      const clearConsoleBtn = document.getElementById("clearConsoleBtn");
-      const consoleOutput = document.getElementById("consoleOutput");
-
-      const presetButtons = document.querySelectorAll(".preset");
-      const rotateBtn = document.getElementById("rotateBtn");
-
-      let isLandscape = false; // controla se está deitado
-
-      /**********************
-       * Atualizações de iframe
-       **********************/
-      function updateIframeSize() {
-        const width = Math.max(1, parseInt(widthSlider.value || 0));
-        const height = Math.max(1, parseInt(heightSlider.value || 0));
-        iframe.width = width;
-        iframe.height = height;
-        updateWrapperSize();
-      }
-
-      function updateIframeScale() {
-        const scale = Math.max(0.01, parseFloat(scaleSlider.value || 1));
-        // transform de escala aplicado ao iframe (mantendo origin top-left)
-        iframe.style.transform = `scale(${scale})`;
-        updateWrapperSize();
-      }
-
-      function updateWrapperSize() {
-        const scale = Math.max(0.01, parseFloat(scaleSlider.value || 1));
-        const width = Math.max(1, parseInt(widthSlider.value || 0));
-        const height = Math.max(1, parseInt(heightSlider.value || 0));
-        wrapper.style.width = `${width * scale}px`;
-        wrapper.style.height = `${height * scale}px`;
-      }
-
-      // sincroniza sliders e inputs numéricos
-      function syncInputs(slider, input, callback) {
-        slider.addEventListener("input", () => {
-          input.value = slider.value;
-          callback();
-        });
-        input.addEventListener("input", () => {
-          // evita valor vazio
-          if (input.value === "") return;
-          slider.value = input.value;
-          callback();
-        });
-      }
-
-      syncInputs(widthSlider, widthInput, updateIframeSize);
-      syncInputs(heightSlider, heightInput, updateIframeSize);
-      syncInputs(scaleSlider, scaleInput, updateIframeScale);
-
-      // inicializa
-      updateIframeSize();
-      updateIframeScale();
-
-      /**********************
-       * Predefinições (menu)
-       **********************/
-      function clearActivePresets() {
-        presetButtons.forEach((b) => b.classList.remove("active"));
-      }
-
-      function applyPreset(btn) {
-        let width = parseInt(btn.getAttribute("data-width"));
-        let height = parseInt(btn.getAttribute("data-height"));
-        const scale = parseFloat(btn.getAttribute("data-scale"));
-
-        if (isLandscape) {
-          // se está deitado, aplicar invertido
-          [width, height] = [height, width];
-        }
-
-        widthSlider.value = widthInput.value = width;
-        heightSlider.value = heightInput.value = height;
-        scaleSlider.value = scaleInput.value = scale;
-
-        updateIframeSize();
-        updateIframeScale();
-
-        clearActivePresets();
-        btn.classList.add("active");
-      }
-
-      presetButtons.forEach((btn) => {
-        btn.addEventListener("click", () => applyPreset(btn));
-      });
-
-      /**********************
-       * Toggle sidebars (mutually exclusive) + mover os DOIS botões
-       **********************/
-      function setAriaOpen(button, isOpen) {
-        button.setAttribute("aria-expanded", String(isOpen));
-      }
-
-      function closeAllSidebars() {
-        menuBar.classList.remove("open");
-        menuBar.setAttribute("aria-hidden", "true");
-        setAriaOpen(toggleMenuBtn, false);
-
-        consoleBar.classList.remove("open");
-        consoleBar.setAttribute("aria-hidden", "true");
-        setAriaOpen(toggleConsoleBtn, false);
-
-        // remove a classe que desloca os botões
-        document.body.classList.remove("sidebar-open");
-      }
-
-      function openSidebar(which) {
-        // abre requested e fecha o outro, e desloca os botões via classe no <body>
-        if (which === "menu") {
-          consoleBar.classList.remove("open");
-          consoleBar.setAttribute("aria-hidden", "true");
-          setAriaOpen(toggleConsoleBtn, false);
-
-          menuBar.classList.add("open");
-          menuBar.setAttribute("aria-hidden", "false");
-          setAriaOpen(toggleMenuBtn, true);
-        } else if (which === "console") {
-          menuBar.classList.remove("open");
-          menuBar.setAttribute("aria-hidden", "true");
-          setAriaOpen(toggleMenuBtn, false);
-
-          consoleBar.classList.add("open");
-          consoleBar.setAttribute("aria-hidden", "false");
-          setAriaOpen(toggleConsoleBtn, true);
-        }
-        // desloca ambos os botões para ficar ao lado do sidebar
-        document.body.classList.add("sidebar-open");
-      }
-
-      toggleMenuBtn.addEventListener("click", () => {
-        const wasOpen = menuBar.classList.contains("open");
-        if (wasOpen) {
-          closeAllSidebars();
-        } else {
-          openSidebar("menu");
-        }
-      });
-
-      toggleConsoleBtn.addEventListener("click", () => {
-        const wasOpen = consoleBar.classList.contains("open");
-        if (wasOpen) {
-          closeAllSidebars();
-        } else {
-          openSidebar("console");
-        }
-      });
-
-      closeMenuBtn.addEventListener("click", closeAllSidebars);
-      closeConsoleBtn.addEventListener("click", closeAllSidebars);
-
-      // fechar com ESC
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          closeAllSidebars();
-        }
-      });
-
-      // fechar sidebars ao clicar no próprio pano de fundo
-      menuBar.addEventListener("click", (ev) => {
-        if (ev.target === menuBar) closeAllSidebars();
-      });
-      consoleBar.addEventListener("click", (ev) => {
-        if (ev.target === consoleBar) closeAllSidebars();
-      });
-
-      /**********************
-       * Rotacionar com animação + swap de valores (corrigido)
-       **********************/
-      rotateBtn.addEventListener("click", () => {
-        const ANIM_MS = 500;
-
-        // anima 90 graus para esquerda (quando em pé) ou direita (quando deitado)
-        if (!isLandscape) {
-          wrapper.style.transform = "translate(-50%, -50%) rotate(-90deg)";
-        } else {
-          wrapper.style.transform = "translate(-50%, -50%) rotate(90deg)";
-        }
-
-        setTimeout(() => {
-          // troca largura e altura (mantém inputs sincronizados)
-          const currentWidth = widthSlider.value;
-          const currentHeight = heightSlider.value;
-          widthSlider.value = widthInput.value = currentHeight;
-          heightSlider.value = heightInput.value = currentWidth;
-
-          // aplica mudanças
-          updateIframeSize();
-          updateIframeScale();
-          clearActivePresets();
-
-          // reseta rotação INSTANTANEAMENTE (remove transição temporariamente)
-          wrapper.classList.add("no-transition");
-          wrapper.style.transform = "translate(-50%, -50%) rotate(0deg)";
-          // força repaint/reflow para garantir a aplicação
-          void wrapper.offsetHeight;
-          wrapper.classList.remove("no-transition");
-
-          // alterna o estado de orientação
-          isLandscape = !isLandscape;
-        }, ANIM_MS);
-      });
-
-      /**********************
-       * Console capture (parent) + tentativa de hook no iframe (same-origin)
-       **********************/
-      // guarda métodos originais do parent
-      const origConsole = {
-        log: console.log.bind(console),
-        info: console.info.bind(console),
-        warn: console.warn.bind(console),
-        error: console.error.bind(console),
-        debug: console.debug.bind(console),
-      };
-
-      // util para stringificar objetos (com tratamento de circular)
-      function safeStringify(obj) {
-        const cache = new WeakSet();
-        try {
-          return JSON.stringify(
-            obj,
-            function (key, value) {
-              if (typeof value === "object" && value !== null) {
-                if (cache.has(value)) return "[Circular]";
-                cache.add(value);
-              }
-              if (typeof value === "function")
-                return `[Function: ${value.name || "anonymous"}]`;
-              return value;
-            },
-            2
-          );
-        } catch (e) {
-          return String(obj);
-        }
-      }
-
-      function formatArg(arg) {
-        if (arg === null) return "null";
-        if (arg === undefined) return "undefined";
-        const t = typeof arg;
-        if (t === "string") return arg;
-        if (t === "number" || t === "boolean") return String(arg);
-        if (t === "function") return `[Function ${arg.name || "anonymous"}]`;
-        if (t === "object") return safeStringify(arg);
-        return String(arg);
-      }
-
-      function logToPanel(type, args, origin = "page") {
-        try {
-          const line = document.createElement("div");
-          line.classList.add("console-line");
-
-          // nível/tag visual
-          const typeClass = ["log", "info", "warn", "error"].includes(type)
-            ? type
-            : "log";
-          line.classList.add(typeClass);
-
-          const meta = document.createElement("div");
-          meta.className = "console-meta";
-          const time = new Date().toLocaleTimeString();
-          const originLabel = origin === "iframe" ? "IFRAME" : "PAGE";
-          meta.textContent = `${time} — ${originLabel} — ${type.toUpperCase()}`;
-
-          const content = document.createElement("div");
-          content.className = "console-content";
-          const text = args.map(formatArg).join(" ");
-          content.textContent = text;
-
-          line.appendChild(meta);
-          line.appendChild(content);
-
-          consoleOutput.appendChild(line);
-          // scroll to bottom
-          consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        } catch (e) {
-          // nada
-        }
-      }
-
-      // sobrescreve console.* do parent mantendo saída original
-      ["log", "info", "warn", "error", "debug"].forEach((type) => {
-        console[type] = function (...args) {
-          try {
-            origConsole[type](...args);
-          } catch (e) {
-            /* ignore */
-          }
-          try {
-            logToPanel(type, args, "page");
-          } catch (e) {
-            /* ignore */
-          }
-        };
-      });
-
-      // limpar console no painel
-      clearConsoleBtn.addEventListener("click", () => {
-        consoleOutput.innerHTML = "";
-      });
-
-      ["log", "info", "warn", "error", "debug"].forEach((type) => {
-        const original = console[type].bind(console);
-        console[type] = function (...args) {
-          original(...args); // ainda mostra no console do iframe
-          try {
-            window.parent.postMessage(
-              { type: "console", level: type, args },
-              "*"
-            );
-          } catch (e) {
-            // falha silenciosa
-          }
-        };
-      });
-
-      window.addEventListener("message", (event) => {
-        if (event.data?.type === "console") {
-          const { level, args } = event.data;
-          logToPanel(level, args, "iframe"); // sua função existente
-        }
-      });
-
-      /**********************
-       * Pequenas melhorias de UX (ex.: fechar painel ao clicar fora)
-       **********************/
-      // (ja implementado acima)
-
-      /**********************
-       * Testes rápidos (descomente se quiser)
-       **********************/
-      // console.log("Teste: console log do parent");
-      // console.info({ foo: "bar", nested: { a: 1 } });
-      // console.warn("Aviso exemplo");
-      // console.error(new Error("Erro exemplo"));
-    </script>
+    <script src="./index.js"></script>
   </body>
 </html>

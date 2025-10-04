@@ -35,6 +35,18 @@ body {
   background: white;
 }
 
+.father-wrapper {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  transition: 0.5s;
+}
+
+body.sidebar-open .father-wrapper {
+  width: calc(100vw - var(--sidebar-width));
+}
+
 .no-transition {
   transition: none !important; /* usado para resetar instantaneamente */
 }

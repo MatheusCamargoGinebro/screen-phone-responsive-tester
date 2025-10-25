@@ -1,189 +1,236 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPRT - Screen Phone Responsive Tester</title>
-    <link rel="stylesheet" href="style.css" />
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>SPRT - Screen Phone Responsive Tester</title>
+		<link rel="stylesheet" href="style.css" />
 
-    <link rel="shortcut icon" href="./imgs/icon.png" type="image/x-icon" />
-  </head>
-  <body>
-    <!-- Controls convertidos para uma sidebar (MenuBar) -->
-    <!-- Botão que abre/fecha a sidebar de Controles -->
-    <button id="toggleControlsBtn" aria-expanded="false" title="Controles">
-      <img src="./imgs/controls.png" alt="Controles" />
-    </button>
+		<link rel="shortcut icon" href="./imgs/icon.png" type="image/x-icon" />
+	</head>
+	<body>
+		<!-- Controls convertidos para uma sidebar (MenuBar) -->
+		<!-- Botão que abre/fecha a sidebar de Controles -->
+		<button id="toggleControlsBtn" aria-expanded="false" title="Controles">
+			<img src="./imgs/controls.png" alt="Controles" />
+		</button>
 
-    <!-- Sidebar de Controles (substitui a antiga div .controls) -->
-    <aside id="controlsBar" class="sideBar" aria-hidden="true">
-      <header>
-        <strong>Controles</strong>
-        <div class="controls-row">
-          <button id="closeControlsBtn">Fechar</button>
-        </div>
-      </header>
+		<!-- Sidebar de Controles (substitui a antiga div .controls) -->
+		<aside id="controlsBar" class="sideBar" aria-hidden="true">
+			<header>
+				<strong>Controles</strong>
+				<div class="controls-row">
+					<button id="closeControlsBtn">Fechar</button>
+				</div>
+			</header>
 
-      <label>
-        Largura:
-        <div class="input-group">
-          <input
-            type="range"
-            id="widthSlider"
-            min="200"
-            max="6000"
-            value="1080"
-          />
-          <input
-            type="number"
-            id="widthInput"
-            min="200"
-            max="6000"
-            value="1080"
-          />
-        </div>
-      </label>
+			<label>
+				Largura:
+				<div class="input-group">
+					<input
+						type="range"
+						id="widthSlider"
+						min="200"
+						max="6000"
+						value="1080"
+					/>
+					<input
+						type="number"
+						id="widthInput"
+						min="200"
+						max="6000"
+						value="1080"
+					/>
+				</div>
+			</label>
 
-      <label>
-        Altura:
-        <div class="input-group">
-          <input
-            type="range"
-            id="heightSlider"
-            min="200"
-            max="6000"
-            value="2340"
-          />
-          <input
-            type="number"
-            id="heightInput"
-            min="200"
-            max="6000"
-            value="2340"
-          />
-        </div>
-      </label>
+			<label>
+				Altura:
+				<div class="input-group">
+					<input
+						type="range"
+						id="heightSlider"
+						min="200"
+						max="6000"
+						value="2340"
+					/>
+					<input
+						type="number"
+						id="heightInput"
+						min="200"
+						max="6000"
+						value="2340"
+					/>
+				</div>
+			</label>
 
-      <label>
-        Escala:
-        <div class="input-group">
-          <input
-            type="range"
-            id="scaleSlider"
-            min="0.1"
-            max="2"
-            step="0.01"
-            value="0.38"
-          />
-          <input
-            type="number"
-            id="scaleInput"
-            min="0.1"
-            max="2"
-            step="0.01"
-            value="0.38"
-          />
-        </div>
-      </label>
-    </aside>
+			<label>
+				Escala:
+				<div class="input-group">
+					<input
+						type="range"
+						id="scaleSlider"
+						min="0.1"
+						max="2"
+						step="0.01"
+						value="0.78"
+					/>
+					<input
+						type="number"
+						id="scaleInput"
+						min="0.1"
+						max="2"
+						step="0.01"
+						value="0.78"
+					/>
+				</div>
+			</label>
 
-    <!-- Iframe / wrapper -->
-    <div class="father-wrapper">
-      <div class="iframe-wrapper" id="iframeWrapper">
-        <iframe id="myIframe" src="http://localhost:8081/"></iframe>
-      </div>
-    </div>
+			<label>
+				DPI (densidade):
+				<div class="input-group">
+					<input
+						type="range"
+						id="dpiSlider"
+						min="1"
+						max="4"
+						step="0.1"
+						value="2"
+					/>
+					<input
+						type="number"
+						id="dpiInput"
+						min="1"
+						max="4"
+						step="0.1"
+						value="2"
+					/>
+				</div>
+			</label>
 
-    <!-- Toggle buttons (menu / console) -->
-    <button id="toggleMenuBtn" aria-expanded="false" title="Predefinições">
-      <img src="./imgs/phone.png" />
-    </button>
-    <button id="toggleConsoleBtn" aria-expanded="false" title="Console">
-      <img src="./imgs/console.png" />
-    </button>
+			<label>
+				URL do iframe:
+				<div class="input-group">
+					<input
+						type="text"
+						id="urlInput"
+						placeholder="http://localhost:8081/"
+						value="http://localhost:8081/"
+						style="flex: 1"
+					/>
+					<button id="applyUrlBtn">Aplicar</button>
+				</div>
+			</label>
+		</aside>
 
-    <!-- Predefinições (menu) -->
-    <aside id="menuBar" class="sideBar" aria-hidden="true">
-      <header>
-        <strong>Predefinições</strong>
-        <div class="controls-row">
-          <button id="closeMenuBtn">Fechar</button>
-        </div>
-      </header>
+		<!-- Iframe / wrapper -->
+		<div class="father-wrapper">
+			<div class="iframe-wrapper" id="iframeWrapper">
+				<iframe id="myIframe" src="http://localhost:8081/"></iframe>
+			</div>
+		</div>
 
-      <div
-        id="presetList"
-        style="display: flex; flex-direction: column; gap: 8px"
-      >
-        <!-- Presets (sem duplicatas em resolução) -->
-        <button
-          class="preset"
-          data-width="1080"
-          data-height="2340"
-          data-scale="0.38"
-        >
-          Samsung Galaxy A15 5G
-        </button>
-        <button
-          class="preset"
-          data-width="1080"
-          data-height="2400"
-          data-scale="0.38"
-        >
-          Motorola Moto G54 5G
-        </button>
-        <button
-          class="preset"
-          data-width="1440"
-          data-height="3120"
-          data-scale="0.25"
-        >
-          Samsung Galaxy S24 Ultra
-        </button>
-        <button
-          class="preset"
-          data-width="1220"
-          data-height="2712"
-          data-scale="0.28"
-        >
-          Xiaomi Poco X6 Pro
-        </button>
-        <button
-          class="preset"
-          data-width="1080"
-          data-height="2640"
-          data-scale="0.35"
-        >
-          Samsung Galaxy Z Flip 5
-        </button>
-        <button
-          class="preset"
-          data-width="720"
-          data-height="1612"
-          data-scale="0.55"
-        >
-          Motorola Moto G24
-        </button>
-      </div>
-    </aside>
+		<!-- Toggle buttons (menu / console) -->
+		<button id="toggleMenuBtn" aria-expanded="false" title="Predefinições">
+			<img src="./imgs/phone.png" />
+		</button>
+		<button id="toggleConsoleBtn" aria-expanded="false" title="Console">
+			<img src="./imgs/console.png" />
+		</button>
 
-    <!-- Console (novo painel) -->
-    <aside id="consoleBar" class="sideBar" aria-hidden="true">
-      <header>
-        <strong>Console</strong>
-        <div class="controls-row">
-          <button id="clearConsoleBtn">Limpar</button>
-          <button id="closeConsoleBtn">Fechar</button>
-        </div>
-      </header>
+		<!-- Predefinições (menu) -->
+		<aside id="menuBar" class="sideBar" aria-hidden="true">
+			<header>
+				<strong>Predefinições</strong>
+				<div class="controls-row">
+					<button id="closeMenuBtn">Fechar</button>
+				</div>
+			</header>
 
-      <div id="consoleOutput" aria-live="polite"></div>
-    </aside>
+			<div
+				id="presetList"
+				style="display: flex; flex-direction: column; gap: 8px"
+			>
+				<!-- Presets (sem duplicatas em resolução) -->
+				<button
+					class="preset"
+					data-width="1080"
+					data-height="2340"
+					data-scale="1.5"
+					data-dpi="4"
+				>
+					Samsung Galaxy A15 5G
+				</button>
 
-    <button id="rotateBtn" title="Rotacionar">
-      <img src="./imgs/rotate.png" />
-    </button>
+				<button
+					class="preset"
+					data-width="1080"
+					data-height="2400"
+					data-scale="1.5"
+					data-dpi="4"
+				>
+					Motorola Moto G54 5G
+				</button>
 
-    <script src="./index.js"></script>
-  </body>
+				<button
+					class="preset"
+					data-width="1440"
+					data-height="3120"
+					data-scale="1.1"
+					data-dpi="5"
+				>
+					Samsung Galaxy S24 Ultra
+				</button>
+
+				<button
+					class="preset"
+					data-width="1220"
+					data-height="2712"
+					data-scale="1.32"
+					data-dpi="4.5"
+				>
+					Xiaomi Poco X6 Pro
+				</button>
+
+				<button
+					class="preset"
+					data-width="1080"
+					data-height="2640"
+					data-scale="1.37"
+					data-dpi="4"
+				>
+					Samsung Galaxy Z Flip 5
+				</button>
+
+				<button
+					class="preset"
+					data-width="720"
+					data-height="1612"
+					data-scale="1.62"
+					data-dpi="3"
+				>
+					Motorola Moto G24
+				</button>
+			</div>
+		</aside>
+
+		<!-- Console (novo painel) -->
+		<aside id="consoleBar" class="sideBar" aria-hidden="true">
+			<header>
+				<strong>Console</strong>
+				<div class="controls-row">
+					<button id="clearConsoleBtn">Limpar</button>
+					<button id="closeConsoleBtn">Fechar</button>
+				</div>
+			</header>
+
+			<div id="consoleOutput" aria-live="polite"></div>
+		</aside>
+
+		<button id="rotateBtn" title="Rotacionar">
+			<img src="./imgs/rotate.png" />
+		</button>
+
+		<script src="./index.js"></script>
+	</body>
 </html>
